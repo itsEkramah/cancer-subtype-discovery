@@ -154,11 +154,3 @@ If you like this project or have suggestions, feel free to fork, star ⭐, or co
 
 ```
 
----
-
-Would you like me to:
-- Save this as a `README.md` file directly in your project ZIP?
-- Or export it separately for GitHub copy-paste?
-
-Let me know and I’ll generate it!
-```
