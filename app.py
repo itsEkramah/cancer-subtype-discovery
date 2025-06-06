@@ -2,94 +2,175 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-from io import BytesIO
+from sklearn.manifold import TSNE
+from sklearn.metrics import adjusted_rand_score, confusion_matrix
+import openai
+import os
+from dotenv import load_dotenv
 
-st.set_page_config(page_title="Cancer Subtype Discovery", layout="wide")
-st.title("🧬 Advanced Cancer Subtype Discovery Dashboard")
+# Optional: use umap if available
+try:
+    import umap
+    UMAP_AVAILABLE = True
+except ImportError:
+    UMAP_AVAILABLE = False
 
-# Upload CSV
-uploaded_file = st.sidebar.file_uploader("Upload gene expression matrix (CSV)", type=["csv"])
-min_var = st.sidebar.slider("Filter genes by minimum variance:", 0.0, 2.0, 0.2, step=0.05)
+st.set_page_config(layout="wide")
+st.title("🧬 Advanced Cancer Subtype Discovery & Visualization Tool")
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file, index_col=0)
+# Load OpenAI API key from .env
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    # Transpose: samples as rows
+# Upload input files
+expr_file = st.sidebar.file_uploader("Upload Gene Expression Matrix (.csv)", type=["csv"])
+subtype_file = st.sidebar.file_uploader("Upload Known Subtypes (.csv)", type=["csv"])
+min_var = st.sidebar.slider("Filter genes by minimum variance", 0.0, 2.0, 0.2)
+k = st.sidebar.slider("Number of Clusters (KMeans)", 2, 10, 3)
+
+# Utility: volcano plot (mocked here with random data)
+def plot_volcano(df):
+    fig, ax = plt.subplots()
+    ax.scatter(df['log2FC'], df['-log10pval'], alpha=0.6, color='gray')
+    ax.axhline(y=-np.log10(0.05), color='red', linestyle='--')
+    ax.axvline(x=1, color='green', linestyle='--')
+    ax.axvline(x=-1, color='green', linestyle='--')
+    ax.set_title("Volcano Plot (Simulated)")
+    ax.set_xlabel("log2 Fold Change")
+    ax.set_ylabel("-log10 p-value")
+    return fig
+
+if expr_file:
+    df = pd.read_csv(expr_file, index_col=0)
     df = df.loc[df.var(axis=1) > min_var]
     data = df.T
 
-    st.subheader("📊 Dataset Overview")
+    st.write("📊 Dataset Summary")
     st.write(f"Shape: {data.shape}")
-    st.write("Top 5 genes by variance:")
-    st.dataframe(df.var(axis=1).sort_values(ascending=False).head())
+    st.dataframe(df.var(axis=1).sort_values(ascending=False).head(5))
 
     # PCA
     pca = PCA(n_components=2)
     pca_result = pca.fit_transform(data)
-    pca_df = pd.DataFrame(pca_result, columns=["PC1", "PC2"])
-    explained_var = pca.explained_variance_ratio_
+    pca_df = pd.DataFrame(pca_result, columns=["PC1", "PC2"], index=data.index)
 
     # KMeans
-    k = st.sidebar.slider("Number of clusters (KMeans):", 2, 10, 3)
     kmeans = KMeans(n_clusters=k, random_state=42)
     pca_df["Cluster"] = kmeans.fit_predict(pca_df)
-    sil_score = silhouette_score(pca_df[["PC1", "PC2"]], pca_df["Cluster"])
 
-    # t-SNE
-    tsne = TSNE(n_components=2, random_state=42, perplexity=10)
-    tsne_result = tsne.fit_transform(data)
-    tsne_df = pd.DataFrame(tsne_result, columns=["tSNE1", "tSNE2"])
-    tsne_df["Cluster"] = pca_df["Cluster"]
+    tabs = st.tabs(["📌 PCA", "🔁 t-SNE", "🔀 UMAP", "📉 Heatmap", "🌋 Volcano Plot", "📊 Subtype Evaluation", "🤖 GPT Summary"])
 
-    # UMAP (optional)
-    try:
-        import umap
-        reducer = umap.UMAP(random_state=42)
-        umap_result = reducer.fit_transform(data)
-        umap_df = pd.DataFrame(umap_result, columns=["UMAP1", "UMAP2"])
-        umap_df["Cluster"] = pca_df["Cluster"]
-    except ImportError:
-        umap_df = None
-
-    # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📈 PCA", "🔁 t-SNE", "🔀 UMAP", "📉 Expression Heatmap"])
-
-    with tab1:
-        st.write(f"Silhouette Score: {sil_score:.2f}")
+    with tabs[0]:
+        st.subheader("PCA Cluster Plot")
         fig, ax = plt.subplots()
-        sns.scatterplot(data=pca_df, x="PC1", y="PC2", hue="Cluster", palette="tab10", ax=ax)
+        sns.scatterplot(data=pca_df, x="PC1", y="PC2", hue="Cluster", palette="Set2", ax=ax)
         st.pyplot(fig)
 
-    with tab2:
+    with tabs[1]:
+        st.subheader("t-SNE Plot")
+        tsne = TSNE(n_components=2, random_state=42, perplexity=10)
+        tsne_result = tsne.fit_transform(data)
+        tsne_df = pd.DataFrame(tsne_result, columns=["tSNE1", "tSNE2"], index=data.index)
+        tsne_df["Cluster"] = pca_df["Cluster"]
         fig, ax = plt.subplots()
-        sns.scatterplot(data=tsne_df, x="tSNE1", y="tSNE2", hue="Cluster", palette="tab10", ax=ax)
+        sns.scatterplot(data=tsne_df, x="tSNE1", y="tSNE2", hue="Cluster", palette="Set2", ax=ax)
         st.pyplot(fig)
 
-    with tab3:
-        if umap_df is not None:
+    with tabs[2]:
+        st.subheader("UMAP Plot")
+        if UMAP_AVAILABLE:
+            reducer = umap.UMAP(random_state=42)
+            umap_result = reducer.fit_transform(data)
+            umap_df = pd.DataFrame(umap_result, columns=["UMAP1", "UMAP2"], index=data.index)
+            umap_df["Cluster"] = pca_df["Cluster"]
             fig, ax = plt.subplots()
-            sns.scatterplot(data=umap_df, x="UMAP1", y="UMAP2", hue="Cluster", palette="tab10", ax=ax)
+            sns.scatterplot(data=umap_df, x="UMAP1", y="UMAP2", hue="Cluster", palette="Set2", ax=ax)
             st.pyplot(fig)
         else:
-            st.warning("UMAP not installed. Run `pip install umap-learn` to enable.")
+            st.warning("UMAP is not installed. Run `pip install umap-learn` to enable.")
 
-    with tab4:
-        if df.shape[0] <= 50:
-            fig = sns.clustermap(df, cmap="vlag", standard_scale=1)
+    with tabs[3]:
+        st.subheader("Top Gene Heatmap")
+        try:
+            top_genes = df.var(axis=1).sort_values(ascending=False).head(50).index
+            fig = sns.clustermap(df.loc[top_genes], cmap="vlag", figsize=(10, 8))
             st.pyplot(fig.fig)
-        else:
-            st.warning("Too many genes for heatmap. Lower variance threshold to view.")
+        except Exception as e:
+            st.error(f"Heatmap error: {e}")
 
-    # Download cluster assignments
-    output_df = pd.DataFrame(data.index)
-    output_df["Cluster"] = pca_df["Cluster"].values
-    csv = output_df.to_csv(index=False).encode()
-    st.download_button("📤 Download Cluster Assignments", csv, "cluster_assignments.csv", "text/csv")
+    with tabs[4]:
+        st.subheader("Volcano Plot (Simulated)")
+        mock_df = pd.DataFrame({
+            'log2FC': np.random.randn(df.shape[0]),
+            '-log10pval': -np.log10(np.random.rand(df.shape[0]))
+        })
+        fig = plot_volcano(mock_df)
+        st.pyplot(fig)
+
+    with tabs[5]:
+        if subtype_file:
+            subtype_df = pd.read_csv(subtype_file)
+            if "Sample" in subtype_df.columns and "Subtype" in subtype_df.columns:
+                subtype_df = subtype_df.set_index("Sample")
+                merged = pca_df.join(subtype_df)
+
+                true_labels = merged["Subtype"].astype("category").cat.codes
+                pred_labels = merged["Cluster"]
+                ari = adjusted_rand_score(true_labels, pred_labels)
+
+                st.write(f"🎯 Adjusted Rand Index (ARI): `{ari:.2f}`")
+                cm = confusion_matrix(true_labels, pred_labels)
+                st.write("🔁 Confusion Matrix")
+                st.dataframe(pd.DataFrame(cm))
+
+                # Safe aggregation
+                def majority_subtype(x):
+                    vc = x.value_counts()
+                    return vc.index[0] if not vc.empty else "Unknown"
+
+                summary_table = merged.groupby("Cluster")["Subtype"].agg(majority_subtype)
+                match_pct = merged.groupby("Cluster").apply(
+                    lambda x: (x["Subtype"] == x["Subtype"].value_counts().idxmax()).mean() * 100 if not x["Subtype"].value_counts().empty else 0
+                )
+
+                st.write("📋 Subtype Match Summary")
+                st.dataframe(pd.DataFrame({
+                    "Majority Subtype": summary_table,
+                    "Match %": match_pct.round(2),
+                    "Samples in Cluster": merged["Cluster"].value_counts().sort_index()
+                }))
+            else:
+                st.warning("Subtype CSV must have columns: 'Sample', 'Subtype'")
+        else:
+            st.info("Upload known subtypes to evaluate clustering accuracy")
+
+    with tabs[6]:
+        if subtype_file:
+            st.subheader("ChatGPT-Generated Cancer Subtype Explanations")
+            subtype_df = pd.read_csv(subtype_file)
+            if "Subtype" in subtype_df.columns:
+                unique_subtypes = subtype_df["Subtype"].dropna().unique().tolist()
+                if st.button("🔍 Generate Subtype Summary"):
+                    prompt = "Explain these cancer subtypes in plain language for a bioinformatics student: " + ", ".join(unique_subtypes)
+                    try:
+                        response = openai.ChatCompletion.create(
+                            model="gpt-3.5-turbo",
+                            messages=[{"role": "user", "content": prompt}],
+                            max_tokens=500,
+                            temperature=0.5
+                        )
+                        summary_text = response["choices"][0]["message"]["content"]
+                        st.success("Subtype Summary Generated:")
+                        st.markdown(summary_text)
+                    except Exception as e:
+                        st.error(f"ChatGPT Error: {e}")
+            else:
+                st.warning("Subtype column not found in uploaded file.")
+        else:
+            st.info("Upload subtype file to enable ChatGPT explanation.")
 else:
-    st.info("Upload a CSV file to begin analysis.")
+    st.info("Upload gene expression data (.csv) to begin analysis.")
