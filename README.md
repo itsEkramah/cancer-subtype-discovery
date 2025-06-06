@@ -130,23 +130,15 @@ Try these for testing (if not already included):
 
 ## 📚 Acknowledgments
 
-This project was inspired and supported by the following Coursera specializations:
-
-* 🧬 [Genomic Data Science – Johns Hopkins University](https://www.coursera.org/specializations/genomic-data-science)
-* 📊 [Data Science – Johns Hopkins University](https://www.coursera.org/specializations/jhu-data-science)
-* 🧠 [Machine Learning – Stanford (Andrew Ng)](https://www.coursera.org/learn/machine-learning)
-
----
-
+This project was inspired and supported by the following Coursera specializations
+#
+#
+#
 ## 🎓 Project Purpose
-
-> This tool was developed as part of a bioinformatics portfolio to demonstrate:
 >
 > * Biological data handling
 > * Real-world machine learning application
 > * Interactive visualization and research communication
-
-Ideal for **scholarship applications**, **graduate admissions**, and **industry showcases**.
 
 ---
 
