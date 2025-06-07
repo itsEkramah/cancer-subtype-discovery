@@ -1,23 +1,19 @@
-# cancer-subtype-discovery
-##run this in powershell (replace with your path)
-& "C:\Users\ekramah\AppData\Roaming\Python\Python310\Scripts\streamlit.exe" run "F:\cancer-subtype-discovery\cancer-subtype-discovery\app.py"
-Here is a fully detailed and recruiter-friendly `README.md` for your **Cancer Subtype Discovery Tool**:
+Here is the updated and **fully detailed** `README.md` reflecting the latest changes in your project — specifically the error fix related to clusters with missing subtype values and overall robustness improvement.
 
 ---
 
 ````markdown
 # 🧬 Cancer Subtype Discovery using Unsupervised Learning
 
-This project is an interactive **Streamlit-based bioinformatics dashboard** designed to discover **cancer subtypes** using gene expression data. It applies machine learning techniques like **PCA**, **t-SNE**, **UMAP**, and **K-Means clustering** to analyze high-dimensional transcriptomic datasets. The tool is ideal for bioinformatics research, educational demos, and showcasing machine learning skills in biology.
+An interactive **bioinformatics dashboard** built using **Streamlit** for discovering cancer subtypes via unsupervised machine learning on gene expression data. It supports visualization, clustering, and statistical summarization, making it ideal for **transcriptomics research**, **educational use**, and **portfolio demonstration**.
 
 ---
 
-## 🚀 Live Demo (Local)
+## 🚀 Run the App Locally
 
-> Make sure Streamlit is installed (see instructions below)
-
-```bash
-streamlit run app.py
+```powershell
+# Replace with your environment path
+& "C:\Users\ekramah\AppData\Roaming\Python\Python310\Scripts\streamlit.exe" run "F:\cancer-subtype-discovery\cancer-subtype-discovery\app.py"
 ````
 
 ---
@@ -27,54 +23,67 @@ streamlit run app.py
 ```
 cancer-subtype-discovery/
 │
-├── app.py                     # Main Streamlit app
-├── requirements.txt           # All dependencies
-├── notebooks           
-├── data/               # (Optional) Example gene expression files
-├── report/                    # Summary PDF output
-├── docs/                      # GitHub Pages static site (optional)
-└── README.md                  # You're here
+├── app.py                     # Main Streamlit dashboard
+├── requirements.txt           # Dependencies list
+├── data/                      # Sample gene expression files
+├── report/                    # Generated PDF summaries (optional)
+├── notebooks/                 # Exploratory notebooks (optional)
+├── docs/                      # Static site or publication pages
+└── README.md                  # You're reading it
 ```
 
 ---
 
-## 🛠 Features
+## 🛠️ Features
 
-| Feature                    | Description                                                 |
-| -------------------------- | ----------------------------------------------------------- |
-| 📥 Upload CSV              | Upload your gene expression matrix (genes × samples) (or download from GEOWEBSITE
-GEO Dataset Example:
-Go to GEO: GSE25066
-Click "Series Matrix File(s)" under Download section
-Open the .txt.gz file in Excel or Python and save it as .csv
-|
-| 📊 PCA + KMeans Clustering | Visualize sample clusters with silhouette score             |
-| 🔁 t-SNE / 🔀 UMAP         | Explore nonlinear manifold projections                      |
-| 📉 Expression Heatmap      | Gene-level heatmap (with hierarchical clustering)           |
-| ⚙️ Variance Filter         | Select top-variant genes to reduce noise                    |
-| 📤 Download Results        | Export cluster assignments as `.csv`                        |
-| 🧾 (Optional) PDF Export   | Add-on to generate summary report (not included by default) |
+| Feature                    | Description                                                                 |
+| -------------------------- | --------------------------------------------------------------------------- |
+| 📁 CSV Upload              | Upload gene expression matrix (genes × samples, .csv format)                |
+| 📊 PCA + KMeans Clustering | Visualize sample clusters, Silhouette Score, and PCA explained variance     |
+| 🔁 t-SNE / 🔀 UMAP         | Explore nonlinear projections for cluster separation                        |
+| 📉 Expression Heatmap      | Heatmap of top-expressed genes across samples (hierarchical clustering)     |
+| ⚙️ Variance Filter         | Filter genes by variance for noise reduction                                |
+| 🔍 Subtype Summary Table   | Match detected clusters with majority-known subtypes using safe aggregation |
+| 📤 Export Options          | Save cluster results and visualizations                                     |
+| 🧾 PDF Report Generator    | Export clustering summary and visuals (optional feature)                    |
+
+> 🧠 **New Update (June 2025)**: The code now safely handles empty subtype groups when summarizing cluster labels. Missing subtype info will return `None` instead of crashing.
 
 ---
 
-## 📈 Example Outputs
+## 🖼️ Interface Snapshots
 
-* Dimensionality reduction (PCA, t-SNE, UMAP)
-* Cluster assignments
-* Interactive plots with color-coded samples
-* Heatmap of top-expressed genes
+Here are some screenshots of the application's interface:
+
+### Screenshot 1
+![Screenshot 1](https://github.com/itsEkramah/cancer-subtype-discovery/raw/main/interface%20images/Screenshot%201.png)
+
+### Screenshot 2
+![Screenshot 2](https://github.com/itsEkramah/cancer-subtype-discovery/raw/main/interface%20images/Screenshot%202025-06-07%20040123.png)
+
+### Screenshot 3
+![Screenshot 3](https://github.com/itsEkramah/cancer-subtype-discovery/raw/main/interface%20images/Screenshot%202025-06-07%20040513.png)
+
+### Screenshot 4
+![Screenshot 4](https://github.com/itsEkramah/cancer-subtype-discovery/raw/main/interface%20images/Screenshot%205.png)
+
+### Screenshot 5
+![Screenshot 5](https://github.com/itsEkramah/cancer-subtype-discovery/raw/main/interface%20images/Screenshot%206.png)
+
+### Screenshot 6
+![Screenshot 6](https://github.com/itsEkramah/cancer-subtype-discovery/raw/main/interface%20images/Screenshot%207.png)
 
 ---
 
 ## 📦 Installation
 
-### Option 1: Using `pip`
+### Install via `pip`
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Option 2: Install Manually
+### OR install manually:
 
 ```bash
 pip install streamlit pandas scikit-learn matplotlib seaborn umap-learn
@@ -82,75 +91,75 @@ pip install streamlit pandas scikit-learn matplotlib seaborn umap-learn
 
 ---
 
-## 📄 How to Use
+## ⚙️ How to Use
 
-1. Run the app:
+1. **Launch the App**
 
-```bash
-streamlit run app.py
-```
+   ```bash
+   streamlit run app.py
+   ```
 
-2. In your browser, go to:
+2. **Visit Localhost**
+   Open your browser: `http://localhost:8501`
 
-```
-http://localhost:8501
-```
-
-3. Upload a **gene expression matrix**:
+3. **Upload CSV File**
+   Format:
 
    * Rows = genes (e.g., `TP53`, `BRCA1`)
    * Columns = samples (e.g., `Sample_1`, `Sample_2`)
-   * Values = expression levels (e.g., log2(TPM), counts)
+   * Values = expression levels (e.g., TPM, RPKM, log2 Counts)
 
-4. Adjust filters:
+4. **Explore the Tabs**
 
-   * `Number of clusters (KMeans)`
-   * `Variance threshold` to exclude low-signal genes
+   * PCA & KMeans clustering
+   * t-SNE / UMAP projections
+   * Heatmap of filtered genes
+   * Subtype cluster matching
 
-5. Switch between tabs:
+5. **Download Outputs**
 
-   * 📈 PCA
-   * 🔁 t-SNE
-   * 🔀 UMAP
-   * 📉 Heatmap
-
-6. Download `.csv` with cluster assignments.
+   * `.csv` file with cluster labels
+   * Optional: PDF summary with visualizations
 
 ---
 
-## 🧪 Sample Test Files
+## 🧪 Sample Files for Testing
 
-Try these for testing (if not already included):
+| File Name                    | Description                             |
+| ---------------------------- | --------------------------------------- |
+| `gene_expression_test_1.csv` | Clean matrix, 50 samples × 10,000 genes |
+| `subtypes_test_1.csv`        | Sample-to-subtype mapping               |
 
-* `gene_expression_test_1.csv`
-* `gene_expression_test_2.csv`
-* `gene_expression_test_3.csv`
+*You can use GSE25066 from GEO: download its Series Matrix, clean it, and save as CSV.*
+
+---
+---
+
+## 🎯 Educational Objectives
+
+* Learn unsupervised clustering (KMeans, UMAP, t-SNE)
+* Apply dimensionality reduction to omics data
+* Develop GUI-based analysis pipelines for biology
+* Practice good coding habits and data handling in bioinformatics
 
 ---
 
-## 📚 Acknowledgments
+## 📜 License
 
-This project was inspired and supported by the following Coursera specializations
-#
-#
-#
-## 🎓 Project Purpose
->
-> * Biological data handling
-> * Real-world machine learning application
-> * Interactive visualization and research communication
+MIT License — Free for academic and commercial use with attribution.
 
 ---
 
-## 📄 License
+## 👨‍💻 Author & Contact
 
-MIT License — free to use, modify, and distribute.
+**Muhammad Ekramah**
+Bioinformatics | Machine Learning | Research Automation
+
+📫 Connect on:
+
+* GitHub: [itsEkramah](https://github.com/itsEkramah)
+* LinkedIn: [Muhammad Ekramah](https://linkedin.com/in/itsEkramah)
 
 ---
 
-## 🤝 Let's Connect
-
-If you like this project or have suggestions, feel free to fork, star ⭐, or connect with me on GitHub and LinkedIn.
-
-``` & "C:\Users\ramla\AppData\Roaming\Python\Python310\Scripts\streamlit.exe" run "F:\cancer-subtype-discovery\cancer-subtype-discovery\app.py"
-
+```
