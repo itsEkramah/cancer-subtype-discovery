@@ -152,5 +152,5 @@ MIT License — free to use, modify, and distribute.
 
 If you like this project or have suggestions, feel free to fork, star ⭐, or connect with me on GitHub and LinkedIn.
 
-```
+``` & "C:\Users\ramla\AppData\Roaming\Python\Python310\Scripts\streamlit.exe" run "F:\cancer-subtype-discovery\cancer-subtype-discovery\app.py"
 
